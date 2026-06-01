@@ -1,3 +1,13 @@
+## Practical Projects
+
+| Project | Skills Practiced | Status |
+|---|---|---|
+| 01 - Networking Basics | IP, DNS, TCP/UDP, ports, OSI model | In progress |
+| 02 - Linux Commands | Linux CLI, permissions, processes, logs | Planned |
+| 03 - Windows Event Logs | Event Viewer, logon events, failed logins | Planned |
+| 04 - Phishing Email Analysis | Email headers, URLs, indicators of compromise | Planned |
+| 05 - Failed Login Investigation | SIEM, KQL, brute force detection | Planned |
+| 06 - Incident Response Playbook | Triage, containment, remediation, documentation | Planned |
 # Cybersecurity Portfolio - Eduardo Nuila
 
 Welcome to my cybersecurity portfolio.
