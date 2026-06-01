@@ -1,84 +1,54 @@
-# Project: Basic Network Connectivity and DNS Analysis
-
-## Date
-
-YYYY-MM-DD
-
-## Summary
-
-This project documents basic network connectivity and DNS analysis using common networking commands.
+# 01 - Networking Basics
 
 ## Objective
+Build a strong foundation in basic networking concepts used in cybersecurity and SOC analysis.
 
-The objective of this project is to practice:
+## Topics Covered
+- What is a network
+- IP addresses
+- Public and private IP addresses
+- TCP and UDP
+- Common ports
+- DNS
+- HTTP and HTTPS
+- Firewalls
+- VPN
+- OSI model
+- Basic Wireshark concepts
 
-- Checking local network configuration
-- Testing connectivity
-- Resolving domain names
-- Understanding basic network paths
+## Key Concepts
 
-## Tools Used
+### IP Address
+An IP address identifies a device on a network.
 
-- Windows Command Prompt
-- PowerShell
-- ping
-- nslookup
-- tracert
+### DNS
+DNS translates domain names into IP addresses.
 
-## Commands Used
+### TCP
+TCP is a reliable communication protocol used by services such as HTTP, HTTPS, SSH, and email.
 
-```powershell
-ipconfig
-ping google.com
-nslookup google.com
-tracert google.com
-```
+### UDP
+UDP is faster but does not guarantee delivery. It is commonly used in services such as DNS, VoIP, and streaming.
 
-## Evidence Collected
+### Ports
+Ports identify specific services running on a device.
 
-| Command | Purpose |
-|---|---|
-| ipconfig | Shows local IP configuration |
-| ping | Tests connectivity to a host |
-| nslookup | Resolves a domain name to an IP address |
-| tracert | Shows the path packets take to reach a destination |
+Examples:
+- 22: SSH
+- 53: DNS
+- 80: HTTP
+- 443: HTTPS
 
-## Analysis
+## Cybersecurity Relevance
+Networking is important in cybersecurity because analysts must understand how devices communicate, how attackers move through networks, and how to identify suspicious connections.
 
-The `ipconfig` command helps identify the local IP address, default gateway, and DNS configuration.
+## What I Practiced
+- Learned basic networking terminology.
+- Reviewed common ports.
+- Studied how DNS works.
+- Started understanding how network traffic can be analyzed.
 
-The `ping` command tests if the device can reach an external domain.
-
-The `nslookup` command shows how DNS resolves a domain name into an IP address.
-
-The `tracert` command shows the network path between my device and the destination.
-
-## Findings
-
-- The device had an active network configuration.
-- DNS resolution worked successfully.
-- External connectivity was available.
-- The route to the destination passed through multiple network hops.
-
-## Risk
-
-If DNS resolution fails, users may not be able to access websites by name. If connectivity fails, there may be issues with the local network, gateway, firewall, or internet service provider.
-
-## Recommendations
-
-- Verify IP configuration when troubleshooting connectivity issues.
-- Check DNS settings if domain names do not resolve.
-- Use ping and tracert to identify where connectivity may be failing.
-- Document network behavior during troubleshooting.
-
-## Conclusion
-
-This project helped me understand basic network troubleshooting commands that are useful for IT support, NOC, and SOC analyst roles.
-
-## Skills Demonstrated
-
-- Basic networking
-- DNS analysis
-- Command line usage
-- Troubleshooting methodology
-- Technical documentation
+## Next Steps
+- Practice Wireshark basics.
+- Analyze simple network traffic.
+- Document suspicious vs normal network behavior.
