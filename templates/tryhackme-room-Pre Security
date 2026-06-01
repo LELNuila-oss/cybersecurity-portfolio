@@ -1078,3 +1078,192 @@ Una **VLAN** permite dividir virtualmente dispositivos dentro de la misma red f�
 | Dispositivos LAN | Router (L3), Switch L2/L3, VLAN |
 
 ---
+
+# DNS en Detalle — Resumen y Análisis
+
+> **Módulo:** How The Web Works  
+> **Plataforma:** TryHackMe  
+> **Temas:** ¿Qué es DNS?, jerarquía de dominios, tipos de registros, flujo de una consulta DNS
+
+---
+
+## 1. ¿Qué es DNS?
+
+El **DNS (Domain Name System)** es el sistema que permite comunicarse con dispositivos en Internet usando nombres legibles (como `tryhackme.com`) en lugar de direcciones IP numéricas (como `104.26.10.229`).
+
+> **Analogía:** DNS es como la agenda de contactos del teléfono: en lugar de marcar un número de 10 dígitos, buscas el nombre de la persona y el teléfono se resuelve automáticamente.
+
+---
+
+## 2. Jerarquía de Dominios
+
+Los dominios siguen una estructura jerárquica de derecha a izquierda:
+
+```
+jupiter.servers.tryhackme.com
+│        │         │        │
+│        │         │        └── TLD (.com)
+│        │         └─────────── Second-Level Domain (tryhackme)
+│        └───────────────────── Subdomain (servers)
+└────────────────────────────── Subdomain (jupiter)
+```
+
+### TLD (Top-Level Domain)
+
+La parte más a la derecha del dominio.
+
+| Tipo | Nombre completo | Propósito | Ejemplos |
+|------|----------------|-----------|---------|
+| **gTLD** | Generic Top-Level Domain | Indica el propósito del dominio | `.com` (comercial), `.org` (organización), `.edu` (educación), `.gov` (gobierno) |
+| **ccTLD** | Country Code Top-Level Domain | Indica el país o región | `.ca` (Canadá), `.co.uk` (Reino Unido), `.sv` (El Salvador) |
+
+> Actualmente existen más de 2,000 TLDs disponibles, incluyendo nuevos gTLDs como `.online`, `.club`, `.website`, `.biz`.
+
+### Second-Level Domain
+
+La parte inmediatamente a la izquierda del TLD. En `tryhackme.com`, `tryhackme` es el Second-Level Domain.
+
+**Restricciones:**
+- Máximo **63 caracteres** + TLD.
+- Solo puede contener: `a-z`, `0-9`, y guiones (`-`).
+- No puede comenzar ni terminar con guión.
+- No puede tener guiones consecutivos.
+
+### Subdomain
+
+Se ubica a la izquierda del Second-Level Domain, separado por un punto.
+
+**Restricciones:**
+- Máximo **63 caracteres** por subdomain.
+- Mismas reglas de caracteres que el Second-Level Domain.
+- Longitud total del dominio: máximo **253 caracteres**.
+- Sin límite en la cantidad de subdominios creados.
+
+---
+
+## 3. Tipos de Registros DNS
+
+| Tipo | Función | Ejemplo |
+|------|---------|---------|
+| **A Record** | Resuelve a una dirección **IPv4** | `tryhackme.com → 104.26.10.229` |
+| **AAAA Record** | Resuelve a una dirección **IPv6** | `tryhackme.com → 2606:4700:20::681a:be5` |
+| **CNAME Record** | Resuelve a **otro nombre de dominio** (alias) | `store.tryhackme.com → shops.shopify.com` |
+| **MX Record** | Indica los servidores de **correo electrónico** del dominio; incluye prioridad | `tryhackme.com → alt1.aspmx.l.google.com (prioridad: 10)` |
+| **TXT Record** | Almacena **texto libre**; múltiples usos | Verificación de propiedad, SPF, DMARC |
+
+### Detalle: Registro MX
+
+El campo de **prioridad** indica al cliente qué servidor intentar primero. Un valor numérico más bajo = mayor prioridad. Si el servidor principal falla, se intenta el siguiente en la lista.
+
+### Detalle: Registro TXT
+
+Usos comunes:
+- **SPF (Sender Policy Framework):** lista servidores autorizados a enviar correo en nombre del dominio (combate spam).
+- **DMARC:** política de autenticación de correo.
+- **Verificación de propiedad:** al registrarse en servicios de terceros (ej: Google Search Console, Microsoft 365).
+
+```
+Ejemplos de registros TXT:
+@ TXT "v=spf1 ip4:192.0.2.0/24 include:_spf.google.com ~all"
+_dmarc.example.com TXT "v=DMARC1; p=reject; rua=mailto:reports@example.com"
+@ TXT "MS=ms12345678"   ← Verificación de propiedad Microsoft
+```
+
+---
+
+## 4. Flujo de una Consulta DNS
+
+Cuando escribes un dominio en el navegador, ocurre lo siguiente:
+
+```
+[Usuario: tryhackme.com]
+        │
+        ▼
+1. ¿Está en caché local del PC?
+   → Sí: usa la IP guardada  ✓
+   → No: continúa ↓
+        │
+        ▼
+2. Recursive DNS Server (ISP o personalizado, ej: 8.8.8.8)
+   ¿Está en su caché?
+   → Sí: devuelve la respuesta  ✓
+   → No: continúa ↓
+        │
+        ▼
+3. Root DNS Server
+   "El TLD es .com → te redirijo al servidor TLD de .com"
+        │
+        ▼
+4. TLD Server (.com)
+   "El dominio es tryhackme → el nameserver es kip.ns.cloudflare.com"
+        │
+        ▼
+5. Authoritative DNS Server (Nameserver)
+   Tiene los registros reales del dominio
+   Devuelve: IP = 104.26.10.229  ✓
+        │
+        ▼
+6. Recursive DNS guarda en caché (por TTL) y devuelve al usuario
+```
+
+### Servidores en el proceso
+
+| Servidor | Función |
+|----------|---------|
+| **Caché local** | Almacena respuestas previas en el propio equipo |
+| **Recursive DNS Server** | Intermediario que busca la respuesta; generalmente provisto por el ISP |
+| **Root DNS Server** | Redirige al TLD Server correcto según la extensión del dominio |
+| **TLD Server** | Conoce el nameserver autorizado para cada dominio bajo su TLD |
+| **Authoritative DNS Server** | Almacena los registros DNS reales del dominio; aquí se hacen las actualizaciones |
+
+### TTL (Time To Live)
+
+El campo **TTL** especifica en **segundos** cuánto tiempo debe almacenarse en caché una respuesta DNS antes de volver a consultarla. Permite reducir el número de consultas repetitivas para dominios populares.
+
+---
+
+## 5. Respuestas a preguntas del módulo
+
+### ¿Qué es DNS?
+| Pregunta | Respuesta |
+|----------|-----------|
+| ¿Qué significa DNS? | Domain Name System |
+
+### Jerarquía de Dominios
+| Pregunta | Respuesta |
+|----------|-----------|
+| Longitud máxima de un subdomain | 63 caracteres |
+| ¿Qué carácter NO puede usarse en un subdomain? (`3 b _ -`) | `_` (guión bajo) |
+| Longitud máxima de un nombre de dominio completo | 253 caracteres |
+| ¿Qué tipo de TLD es `.co.uk`? | ccTLD |
+
+### Tipos de Registros
+| Pregunta | Respuesta |
+|----------|-----------|
+| ¿Qué tipo de registro indica dónde enviar correo? | MX Record |
+| ¿Qué tipo de registro maneja direcciones IPv6? | AAAA Record |
+
+### Haciendo una Consulta DNS
+| Pregunta | Respuesta |
+|----------|-----------|
+| ¿Qué campo especifica cuánto tiempo debe guardarse en caché un registro? | TTL |
+| ¿Qué tipo de servidor DNS suele proveer tu ISP? | Recursive DNS Server |
+| ¿Qué tipo de servidor almacena todos los registros de un dominio? | Authoritative DNS Server |
+
+---
+
+## 6. Análisis y conceptos clave para ciberseguridad
+
+1. **DNS Spoofing / Cache Poisoning:** Un atacante inyecta registros DNS falsos en la caché de un Recursive DNS Server, redirigiendo a los usuarios a sitios maliciosos sin que lo noten. Mitigación: DNSSEC (DNS Security Extensions).
+
+2. **DNS Exfiltration:** Los atacantes pueden usar consultas DNS para exfiltrar datos codificados en los subdominios (ej: `datos_robados.attacker.com`). Al ser tráfico DNS, frecuentemente pasa desapercibido por firewalls que no inspeccionan DNS.
+
+3. **Subdomain Takeover:** Si una empresa registra un CNAME hacia un servicio de terceros (ej: Heroku, GitHub Pages) y luego abandona ese servicio sin eliminar el registro DNS, un atacante puede reclamar ese servicio y controlar el subdominio.
+
+4. **Registros TXT y reconocimiento:** Durante el reconocimiento (OSINT), los registros TXT de un dominio pueden revelar servicios usados por la organización (Google Workspace, Microsoft 365, Mailchimp, etc.), reduciendo el tiempo de enumeración.
+
+5. **TTL bajo como indicador de actividad sospechosa:** Un TTL muy bajo (ej: 60 segundos) puede indicar **Fast Flux DNS**, una técnica usada por botnets para cambiar rápidamente las IPs asociadas a su infraestructura de C2 y evadir bloqueos.
+
+6. **MX Records en ataques de phishing:** Configurar registros MX falsos o SPF/DMARC incorrectos permite a atacantes suplantar dominios legítimos en campañas de phishing. Verificar registros TXT SPF y DMARC es parte del hardening básico de correo.
+
+---
